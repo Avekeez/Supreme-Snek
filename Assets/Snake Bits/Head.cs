@@ -31,6 +31,7 @@ public class Head : MonoBehaviour {
 			GameObject obj = (GameObject) Instantiate (SegmentObj);
 			obj.SendMessage ("SetIndex", i);
 			segments.Add (obj);
+			obj.SetActive (false);
 		}
 		probes = new List<GameObject> ();
 		for (int i = 0; i < maxSegments; i++) {
@@ -44,6 +45,9 @@ public class Head : MonoBehaviour {
 	}
 
 	void FixedUpdate () {
+		for (int i = 0; i < 100; i++) {
+			segments[i].SetActive (true);
+		} 
 		if (transform.position.y < 0) {
 			rb.AddForce (transform.up * -Input.GetAxis ("Pitch") * 250, ForceMode.Impulse);
 			rb.useGravity = false;
