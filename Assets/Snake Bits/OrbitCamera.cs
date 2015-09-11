@@ -16,17 +16,17 @@ public class OrbitCamera : MonoBehaviour {
 	}
 
 	void FixedUpdate () {
-		transform.position = head.position + Vector3.up * 10;
+		transform.position = head.position + Vector3.up * 5;
 		transform.Rotate (new Vector3 (-Input.GetAxis ("Mouse Y") * 5, Input.GetAxis ("Mouse X") * 5, -transform.rotation.eulerAngles.z));
+	}
+
+	void Update () {
 		GameObject cam = transform.GetChild (0).gameObject;
 		Debug.DrawRay (cam.transform.position, cam.transform.forward*1000, Color.green);
-
-		int bitmask = 1 << 8;
-
 		RaycastHit hit;
-		if (Physics.Raycast (cam.transform.position, cam.transform.forward, out hit, Mathf.Infinity, bitmask)) {
+		if (Physics.Raycast (cam.transform.position, cam.transform.forward, out hit, Mathf.Infinity, 1 << 8) && Input.GetMouseButtonDown (0)) {
 			point = hit.point;
-			print ("Ayy");
+			mark.transform.position = point;
 		}
 	}
 }

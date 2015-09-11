@@ -21,8 +21,10 @@ public class Head : MonoBehaviour {
 	private bool hasLeftGround;
 
 	private int probesEjected;
+	private bool allProbesEjected;
 
 	void Awake () {
+		allProbesEjected = false;
 		alive = true;
 		currentSegments = 100;
 		rb = GetComponent<Rigidbody> ();
@@ -59,23 +61,75 @@ public class Head : MonoBehaviour {
 		transform.rotation = Quaternion.LookRotation (rb.velocity.normalized);
 	}
 	void Update () {
-		if (Input.GetMouseButtonDown (1) && probesEjected < 100) {
-			if (segments[probesEjected].transform.position.y > 5 && segments[probesEjected].transform.position.y < 50) {
-				probes[probesEjected].transform.position = segments[probesEjected].transform.position + segments[probesEjected].transform.up * 5;
-				segments[probesEjected].transform.GetChild (1).gameObject.SetActive (false);
-				probes[probesEjected].SetActive (true);
-				probesEjected ++;
+		for (int i = 0; i < 100 && !allProbesEjected; i ++) {
+			if (!probes[i].activeInHierarchy) {
+				allProbesEjected = false;
+				break;
+			}
+			if (i == 99 && probes[99].activeInHierarchy) {
+				allProbesEjected = true;
+				break;
+			}
+		}
+		if (Input.GetMouseButtonDown (1) && !allProbesEjected) {
+			for (int i = 0; i < 100; i ++) {
+				if (Random.value < 0.05f && !probes[i].activeInHierarchy) {
+					StartCoroutine (ejectProbe (i));
+				}
 			}
 		}
 		if (Input.GetMouseButtonDown (0)) {
-			StartCoroutine (shoot ());
+			shoot ();
+		}
+		/*
+		for (int i = 0; i < 100; i++) {
+			for (int j = 0; j < 100; j++) {
+				if (probes[i].activeInHierarchy && probes[j].activeInHierarchy && i != j) {
+					if (probes[i].GetComponent<SphereCollider> ().bounds.Intersects (probes[j].GetComponent<SphereCollider> ().bounds)) {
+						Vector3 direction = -(probes[i].transform.position-probes[j].transform.position).normalized;
+						probes[i].transform.Translate (direction);
+						probes[j].transform.Translate (-direction);
+					}
+				}
+			}
+		}
+		*/
+	}
+
+	void shoot () {
+		for (int i = 0; i < 100; i++) {
+			if (probes[i].activeInHierarchy) {
+				probes[i].SendMessage ("Shoot");
+			}
 		}
 	}
 
-	IEnumerator shoot () {
-		for (int i = 0; i < probesEjected; i++) {
-			probes[i].SendMessage ("Shoot");
-			yield return new WaitForSeconds (0.01f);
+	void OnTriggerEnter (Collider other) {
+		if (other.gameObject.tag == "Ground" && rb.velocity.y > 40) {
+			rb.AddForce (Vector3.up*10000);
 		}
+	}
+
+	IEnumerator ejectProbe (int i) {
+		Transform segment = segments [i].transform;
+		Transform probe = probes[i].transform;
+		if (segment.position.y < 20) {
+			Vector3 c = segment.position;
+			c.y = 0;
+			probes[i].GetComponent<Probe> ().target = new Vector3 (segment.position.x, 10, segment.position.z) 
+					+ new Vector3 ((Random.value-0.5f)*100, 20+Random.value*50, (Random.value-0.5f)*100);
+			probe.position = c - Vector3.up;
+			segment.GetChild (1).gameObject.SetActive (false);
+			probes[i].SetActive (true);
+		} else {
+			probes[i].GetComponent<Probe> ().target = segment.position 
+					+ segment.up * (10+Random.value*10) 
+					+ segment.right * (Random.value-0.5f)*100 
+					+ segment.forward * (Random.value-0.5f)*100;
+			probe.position = segment.position + segment.up;
+			segment.GetChild (1).gameObject.SetActive (false);
+			probes[i].SetActive (true);
+		}
+		yield return new WaitForSeconds (0.5f);
 	}
 }
