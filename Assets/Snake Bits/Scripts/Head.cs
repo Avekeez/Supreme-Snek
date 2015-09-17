@@ -16,16 +16,11 @@ public class Head : MonoBehaviour {
 
 	public int currentSegments;
 
-	private bool alive;
-
 	private bool hasLeftGround;
-
-	private int probesEjected;
 	private bool allProbesEjected;
 
 	void Awake () {
 		allProbesEjected = false;
-		alive = true;
 		currentSegments = 100;
 		rb = GetComponent<Rigidbody> ();
 		segments = new List<GameObject> (segments);
@@ -42,8 +37,9 @@ public class Head : MonoBehaviour {
 			obj.SetActive (false);
 		}
 		Instantiate (TailObj);
-		rb.velocity = Vector3.forward*50;
-		probesEjected = 0;
+		rb.velocity = Vector3.up*-50;
+
+        InvokeRepeating ("ejectProbe", 1, 1);
 	}
 
 	void FixedUpdate () {
@@ -54,11 +50,16 @@ public class Head : MonoBehaviour {
 			rb.AddForce (transform.up * -Input.GetAxis ("Pitch") * 250, ForceMode.Impulse);
 			rb.useGravity = false;
 		} else {
-			rb.useGravity = true;
+            rb.AddForce(transform.up * -Input.GetAxis("Pitch") * 50, ForceMode.Impulse);
+            rb.useGravity = true;
 		}
-		rb.AddForce (transform.right * Input.GetAxis ("Roll") * 100, ForceMode.Impulse);
-		rb.velocity = rb.velocity.normalized * 50;
-		transform.rotation = Quaternion.LookRotation (rb.velocity.normalized);
+        //rb.AddForce (transform.right * Input.GetAxis ("Roll") * 100, ForceMode.Impulse);
+        //transform.Rotate (transform.forward * -Input.GetAxis ("Roll") * 100);
+        rb.AddTorque(transform.forward * -Input.GetAxis("Roll") * 10000);
+        //Debug.Log (transform.forward * -Input.GetAxis("Roll") * 100);
+        rb.velocity = rb.velocity.normalized * 50;
+        Quaternion look = Quaternion.LookRotation(rb.velocity.normalized, transform.up);
+        transform.rotation = look;
 	}
 	void Update () {
 		for (int i = 0; i < 100 && !allProbesEjected; i ++) {
@@ -69,13 +70,6 @@ public class Head : MonoBehaviour {
 			if (i == 99 && probes[99].activeInHierarchy) {
 				allProbesEjected = true;
 				break;
-			}
-		}
-		if (Input.GetMouseButtonDown (1) && !allProbesEjected) {
-			for (int i = 0; i < 100; i ++) {
-				if (Random.value < 0.05f && !probes[i].activeInHierarchy) {
-					StartCoroutine (ejectProbe (i));
-				}
 			}
 		}
 		if (Input.GetMouseButtonDown (0)) {
@@ -106,11 +100,22 @@ public class Head : MonoBehaviour {
 
 	void OnTriggerEnter (Collider other) {
 		if (other.gameObject.tag == "Ground" && rb.velocity.y > 40) {
-			rb.AddForce (Vector3.up*10000);
+			rb.AddForce (Vector3.up*100000);
 		}
 	}
 
-	IEnumerator ejectProbe (int i) {
+    void ejectProbe () {
+        if (!allProbesEjected) {
+            for (int i = 0; i < 100; i++) {
+                if (Random.value < 0.05f && !probes[i].activeInHierarchy)
+                {
+                    StartCoroutine(ejectProbe_(i));
+                }
+            }
+        }
+    }
+
+	IEnumerator ejectProbe_ (int i) {
 		Transform segment = segments [i].transform;
 		Transform probe = probes[i].transform;
 		if (segment.position.y < 20) {
@@ -122,11 +127,15 @@ public class Head : MonoBehaviour {
 			segment.GetChild (1).gameObject.SetActive (false);
 			probes[i].SetActive (true);
 		} else {
-			probes[i].GetComponent<Probe> ().target = segment.position 
-					+ segment.up * (10+Random.value*10) 
-					+ segment.right * (Random.value-0.5f)*100 
-					+ segment.forward * (Random.value-0.5f)*100;
-			probe.position = segment.position + segment.up;
+            Vector3 target = segment.position
+                    + segment.up * (10 + Random.value * 10)
+                    + segment.right * (Random.value - 0.5f) * 100
+                    + segment.forward * (Random.value - 0.5f) * 100;
+            if (target.y < 0) {
+                target.y = Random.value * 50;
+            }
+            probes[i].GetComponent<Probe>().target = target;
+            probe.position = segment.position + segment.up;
 			segment.GetChild (1).gameObject.SetActive (false);
 			probes[i].SetActive (true);
 		}

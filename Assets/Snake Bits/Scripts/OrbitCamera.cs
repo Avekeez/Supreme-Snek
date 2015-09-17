@@ -24,7 +24,7 @@ public class OrbitCamera : MonoBehaviour {
 		GameObject cam = transform.GetChild (0).gameObject;
 		Debug.DrawRay (cam.transform.position, cam.transform.forward*1000, Color.green);
 		RaycastHit hit;
-		if (Physics.Raycast (cam.transform.position, cam.transform.forward, out hit, Mathf.Infinity, 1 << 8) && Input.GetMouseButtonDown (0)) {
+		if ((Physics.Raycast (cam.transform.position, cam.transform.forward, out hit, Mathf.Infinity, 1 << 8) || Physics.Raycast (cam.transform.position, cam.transform.forward, out hit, Mathf.Infinity, 1 << 10)) && Input.GetMouseButtonDown (0)) {
 			point = hit.point;
 			mark.transform.position = point;
 		}
