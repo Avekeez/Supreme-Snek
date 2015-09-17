@@ -7,17 +7,24 @@ public class Laser : MonoBehaviour {
 	Vector3 t;
 
 	float speed = 10;
+    Rigidbody rb;
 
 	void Awake () {
 		t = target;
 		transform.LookAt (t);
+        rb = GetComponent<Rigidbody> ();
 	}
 	
 	void Update () {
-		transform.position += transform.forward * speed;
-
-		if (transform.position.y < 0) {
-			Destroy (gameObject);
-		}
+        rb.AddForce (transform.forward * speed, ForceMode.Impulse);
+        if (Vector3.Distance (transform.position, Vector3.zero) > 500) {
+            Destroy (gameObject);
+        }
 	}
+
+    void OnCollisionEnter (Collision other) {
+        if (other.gameObject.tag == "Ground") {
+            Destroy (gameObject);
+        }
+    }
 }

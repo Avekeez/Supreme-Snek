@@ -22,22 +22,24 @@ public class Probe : MonoBehaviour {
 		startTime = Time.time;
 		distance = Vector3.Distance (transform.position, target);
 		vInitial = transform.position;
-		InvokeRepeating ("Shoot", distance / 10, 3);
+		InvokeRepeating ("Shoot", distance / 10, 5);
 	}
 
 	void FixedUpdate () {
 		transform.LookAt (cam.GetComponent<OrbitCamera> ().point);
 	}
 	void Update () {
-		float f = 10*(Time.time - startTime) / distance;
-		transform.position = Vector3.Lerp (vInitial, target, f);
+        if (transform.position != target) {
+            float f = 10 * (Time.time - startTime) / distance;
+            transform.position = Vector3.Lerp(vInitial, target, f);
+        }
 		if (transform.position == target) {
 			isActive = true;
 		}
 	}
 	void Shoot () {
 		if (isActive) {
-			Invoke ("Shoot_", Random.value*2);
+			Invoke ("Shoot_", Random.value*5);
 		}
 	}
 	void Shoot_ () {
