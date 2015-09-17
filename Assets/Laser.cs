@@ -12,7 +12,7 @@ public class Laser : MonoBehaviour {
 		t = target;
 		transform.LookAt (t);
 	}
-
+	
 	void Update () {
 		transform.position += transform.forward * speed;
 
