@@ -104,6 +104,20 @@ public class Head : MonoBehaviour {
 		}
 	}
 
+    void OnCollisionEnter (Collision other) {
+        Debug.Log ("ayy");
+        if (other.gameObject.layer == 12) {
+            GameObject p = other.gameObject.transform.parent.gameObject;
+            for (int i = 1; i < p.transform.childCount; i++) {
+                GameObject c = p.transform.GetChild (i).gameObject;
+                c.SetActive (true);
+                c.GetComponent<Rigidbody> ().constraints = RigidbodyConstraints.None;
+                //c.GetComponent<Rigidbody> ().AddExplosionForce (10, transform.position, 5, 0, ForceMode.Impulse);
+            }
+            //other.gameObject.SetActive (false);
+        }
+    }
+
     void ejectProbe () {
         if (!allProbesEjected) {
             for (int i = 0; i < 100; i++) {

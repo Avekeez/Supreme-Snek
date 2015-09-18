@@ -17,14 +17,27 @@ public class Laser : MonoBehaviour {
 	
 	void Update () {
         rb.AddForce (transform.forward * speed, ForceMode.Impulse);
-        if (Vector3.Distance (transform.position, Vector3.zero) > 500) {
+        if (transform.position.y < 0) {
             Destroy (gameObject);
         }
 	}
 
     void OnCollisionEnter (Collision other) {
-        if (other.gameObject.tag == "Ground") {
-            Destroy (gameObject);
+        if (other.gameObject.layer == 12) {
+            GameObject p = other.gameObject.transform.parent.gameObject;
+            for (int i = 1; i < p.transform.childCount; i++) {
+                GameObject c = p.transform.GetChild (i).gameObject;
+                if (Vector3.Distance (transform.position, c.transform.position) < 10) {
+                    c.GetComponent<Rigidbody> ().constraints = RigidbodyConstraints.None;
+                    Vector3 force = -transform.forward*100;
+                    force.y = 0;
+                    c.GetComponent<Rigidbody> ().AddForce (force);
+                    //c.SetActive (false);
+                }
+                //c.GetComponent<Rigidbody> ().AddExplosionForce (10, transform.position, 5, 0, ForceMode.Impulse);
+            }
+            //other.gameObject.SetActive (false);
         }
+        Destroy (gameObject);
     }
 }
