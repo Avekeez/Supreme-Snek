@@ -31,9 +31,10 @@ public class Laser : MonoBehaviour {
                     c.GetComponent<Rigidbody> ().constraints = RigidbodyConstraints.None;
                     Vector3 force = -transform.forward*100;
                     force.y = 0;
-                    c.GetComponent<Rigidbody> ().AddForce (force);
-                    //c.SetActive (false);
-                }
+                    //c.GetComponent<Rigidbody> ().AddForce (force);
+					c.GetComponent<Rigidbody>().AddExplosionForce(10,transform.position,5,0,ForceMode.Impulse);
+					//c.SetActive (false);
+				}
                 //c.GetComponent<Rigidbody> ().AddExplosionForce (10, transform.position, 5, 0, ForceMode.Impulse);
             }
             //other.gameObject.SetActive (false);
